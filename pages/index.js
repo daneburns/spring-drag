@@ -28,26 +28,33 @@ const slides = [
 
 export default function Home() {
   const [index, set] = useState(0);
-
+  const [scale, setScale] = useState(1.0);
+  const [windowSize, setWindowSize] = useState({ x: 0, y: 0 });
   const [{ xy }, setXY] = useSpring(() => ({ xy: [0, 0] }));
 
+  useEffect(() => {
+    setWindowSize({ x: window.innerWidth, y: window.innerHeight });
+  }, []);
   const bind = useDrag(
-    ({ down, movement, moving, dragging, offset, cancel }) => {
-      if (!dragging && Math.abs(offset[0]) >= 200) {
-        console.log(offset)
-
+    ({ down, movement, moving, dragging, offset, cancel, ...state }) => {
+      console.log(state);
+      if (!dragging && Math.abs(offset[0]) >= 80) {
         set(index + 1);
-        setXY({xy: 0})
+        setXY({ xy: movement });
       }
-      setXY({ xy: movement });
+      setXY({ xy: down ? movement : [0, 0] });
+    },
+    {
+      bounds: { left: -100, right: 100 },
+      rubberband: true,
     }
   );
 
   const transitions = useTransition(slides[index], (item) => item.id, {
-    from: {  opacity: 0.25},
-    enter: {  opacity: 1 },
-    leave: {  opacity: 0.25 },
-    config: config.slow
+    from: { opacity: 0.25 },
+    enter: { opacity: 1 },
+    leave: { opacity: 0.0 },
+    config: config.slow,
   });
 
   useEffect(() => {
@@ -60,12 +67,14 @@ export default function Home() {
         return (
           <animated.div
             {...bind()}
-            className={` h-64 w-64 bg-red-${
+            className={` absolute h-64 w-64 bg-red-${
               item.id * 100
             } rounded-full`}
             key={key}
             style={{
               ...props,
+              backgroundImage: `url("${item.url}")`,
+              backgroundSize: "contain",
               transform: xy.interpolate(
                 (x, y) => `translate3d(${x}px, ${y}px, 0)`
               ),
