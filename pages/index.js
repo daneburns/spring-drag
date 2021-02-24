@@ -13,17 +13,17 @@ import { useState, useEffect } from "react";
 const slides = [
   {
     id: 1,
-    url: "https://source.unsplash.com/random/800x600",
+    url: "https://source.unsplash.com/random/100x100",
   },
   {
     id: 2,
-    url: "https://source.unsplash.com/random/800x500",
+    url: "https://source.unsplash.com/random/150x150",
   },
   {
     id: 3,
-    url: "https://source.unsplash.com/random/800x550",
+    url: "https://source.unsplash.com/random/125x125",
   },
-  { id: 4, url: "https://source.unsplash.com/random/800x400" },
+  { id: 4, url: "https://source.unsplash.com/random/110x110" },
 ];
 
 export default function Home() {
@@ -39,6 +39,12 @@ export default function Home() {
     ({ down, movement, moving, dragging, offset, cancel, ...state }) => {
       console.log(state);
       if (!dragging && Math.abs(offset[0]) >= 80) {
+        if (index >= slides.length - 1) {
+          console.log(index);
+          set(0);
+          setXY({ xy: movement });
+          return;
+        }
         set(index + 1);
         setXY({ xy: movement });
       }
@@ -51,10 +57,9 @@ export default function Home() {
   );
 
   const transitions = useTransition(slides[index], (item) => item.id, {
-    from: { opacity: 0.25 },
-    enter: { opacity: 1 },
-    leave: { opacity: 0.0 },
-    config: config.slow,
+    from: { borderColor: "red" },
+    enter: { borderColor: "white" },
+    leave: { borderColor: "blue" },
   });
 
   useEffect(() => {
@@ -66,21 +71,26 @@ export default function Home() {
       {transitions.map(({ item, props, key }) => {
         return (
           <animated.div
-            {...bind()}
-            className={` absolute h-64 w-64 bg-red-${
+            className={`absolute h-64 w-64 border-solid border-8 bg-red-${
               item.id * 100
-            } rounded-full`}
-            key={key}
-            style={{
-              ...props,
-              backgroundImage: `url("${item.url}")`,
-              backgroundSize: "contain",
-              transform: xy.interpolate(
-                (x, y) => `translate3d(${x}px, ${y}px, 0)`
-              ),
-            }}
+            }`}
           >
-            {item.text}
+            <animated.div {...bind()}>
+              <animated.div
+                key={key}
+                className='h-64 w-64 rounded-full'
+                style={{
+                  ...props,
+                  backgroundImage: `url("${item.url}")`,
+                  backgroundSize: "contain",
+                  transform: xy.interpolate(
+                    (x, y) => `translate3d(${x}px, ${y}px, 0)`
+                  ),
+                }}
+              >
+                {item.text}
+              </animated.div>
+            </animated.div>
           </animated.div>
         );
       })}
